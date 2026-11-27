@@ -1,0 +1,21 @@
+ASC Pilot Pro — Commercial License
+
+Copyright (c) 2026 SpacePlant Corporation. All rights reserved.
+
+"Pro Features" means: the complete Revenue Leak Scan output beyond the summary
+and first leak (including fix playbooks), the `money` and `report` commands,
+and the `asc_sales_summary` and `asc_cashflow_report` MCP tools, together with
+the code paths in this repository that implement or unlock them.
+
+1. Using the Pro Features requires a valid license key issued by SpacePlant
+   Corporation. A "pro" key licenses one person on any number of their own
+   machines. A "studio" key licenses one company/team.
+2. You may not remove, disable or circumvent the license check, or distribute
+   modified versions that do so.
+3. You may read and audit the source, and you may modify it for your own
+   licensed use.
+4. The Pro Features are provided "AS IS", without warranty of any kind. To the
+   maximum extent permitted by law SpacePlant Corporation is not liable for any
+   damages arising from their use.
+5. Refunds: if ASC Pilot Pro doesn't find anything useful in your account,
+   ask within 14 days of purchase for a full refund.

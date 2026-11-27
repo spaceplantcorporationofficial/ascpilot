@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ascpilot"
+version = "1.0.0"
+description = "Find the money your App Store Connect account is leaking — CLI + MCP server for AI agents."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT (core) + commercial (Pro features, see LICENSE-PRO)" }
+authors = [{ name = "SpacePlant Corporation" }]
+keywords = ["app-store-connect", "ios", "mcp", "in-app-purchase", "revenue", "indie"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Environment :: Console",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://spaceplantcorporationofficial.github.io/ascpilot/"
+Source = "https://github.com/spaceplantcorporationofficial/ascpilot"
+
+[project.scripts]
+ascpilot = "ascpilot.cli:main"
+
+[tool.setuptools]
+packages = ["ascpilot"]
