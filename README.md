@@ -2,6 +2,8 @@
 
 <!-- mcp-name: io.github.spaceplantcorporationofficial/ascpilot -->
 
+[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.spaceplantcorporationofficial%2Fascpilot-29db8f)](https://registry.modelcontextprotocol.io/v0/servers?search=ascpilot) [![ascpilot MCP server](https://glama.ai/mcp/servers/spaceplantcorporationofficial/ascpilot/badges/score.svg)](https://glama.ai/mcp/servers/spaceplantcorporationofficial/ascpilot) [![Release](https://img.shields.io/github/v/release/spaceplantcorporationofficial/ascpilot)](https://github.com/spaceplantcorporationofficial/ascpilot/releases/latest)
+
 **Find the money your App Store account is leaking.** From your terminal, or from your AI coding agent via MCP.
 
 ```
