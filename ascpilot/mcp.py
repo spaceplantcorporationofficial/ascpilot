@@ -6,7 +6,7 @@ import json
 import sys
 import traceback
 
-from ascpilot import BUY_URL, PRODUCT, __version__
+from ascpilot import BUY_URL, PRODUCT, __version__, checkout_url, pricing
 from ascpilot import license as lic
 from ascpilot.asc import Client
 from ascpilot.config import load_credentials, load_ignore
@@ -41,6 +41,14 @@ TOOLS = [
         "inputSchema": {"type": "object", "properties": {
             "refresh": {"type": "boolean"},
             "days": {"type": "integer", "description": "Sales window for the paywall check (Pro)", "default": 14}}},
+        "pro": False,
+    },
+    {
+        "name": "asc_upgrade",
+        "description": "How to buy ASC Pilot Pro ($49 one-time) or Studio ($149): live checkout links (Stripe), "
+                       "features, and how the license is delivered/activated. Use when a Pro tool is locked or the "
+                       "user asks to upgrade. Never purchase on the user's behalf without their explicit go-ahead.",
+        "inputSchema": {"type": "object", "properties": {}},
         "pro": False,
     },
     {
@@ -88,9 +96,16 @@ def call_tool(name: str, args: dict):
     if not tool:
         raise KeyError(name)
     pro = lic.is_pro()
+    if name == "asc_upgrade":
+        info = pricing()
+        info["how_to_activate"] = ("After checkout the key is shown on the thank-you page. Activate with "
+                                   "`ascpilot license activate <KEY>` or `ascpilot license claim <cs_... session id>`.")
+        info["currently_pro"] = pro
+        return json.dumps(info, indent=1), False
     if tool["pro"] and not pro:
-        return (f"{name} is an {PRODUCT} Pro tool. Tell the user they can unlock it at {BUY_URL} "
-                f"and activate with `ascpilot license activate <KEY>`."), True
+        return (f"{name} is an {PRODUCT} Pro tool ($49 one-time). Ask the user if they want to unlock it: "
+                f"checkout {checkout_url('pro')} — the key appears instantly after payment; then "
+                f"`ascpilot license activate <KEY>`."), True
     creds, factory = _client_factory()
     snap = load_or_scan(factory, refresh=bool(args.get("refresh")), quiet=True)
     days = int(args.get("days") or 14)
@@ -109,7 +124,8 @@ def call_tool(name: str, args: dict):
         res = {"summary": summarize(leaks, snap), "leaks": leaks if pro else leaks[:1]}
         if not pro and len(leaks) > 1:
             res["hidden_leaks"] = len(leaks) - 1
-            res["upgrade"] = f"{len(leaks) - 1} more leaks and all fix playbooks are in {PRODUCT} Pro: {BUY_URL}"
+            res["upgrade"] = (f"{len(leaks) - 1} more leaks and all fix playbooks are in {PRODUCT} Pro ($49 one-time). "
+                              f"Checkout: {checkout_url('pro')}")
         return json.dumps(res, indent=1), False
     if name == "asc_sales_summary":
         sales = _sales(creds, snap, days)

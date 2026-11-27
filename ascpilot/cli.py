@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 
-from ascpilot import BUY_URL, PRODUCT, REPO_URL, __version__
+from ascpilot import BUY_URL, PRODUCT, REPO_URL, __version__, checkout_url, pricing
 from ascpilot import license as lic
 from ascpilot.asc import ASCError, Client
 from ascpilot.config import load_ignore, save_ignore, CONFIG_FILE, load_credentials, save_config
@@ -44,9 +44,9 @@ def _snapshot(args):
 
 def _require_pro(feature: str):
     if not lic.is_pro():
-        raise UserError(f"{feature} is part of {PRODUCT} Pro.\n"
-                        f"  Get a license → {BUY_URL}\n"
-                        f"  Then: ascpilot license activate <KEY>")
+        raise UserError(f"{feature} is part of {PRODUCT} Pro ($49 one-time).\n"
+                        f"  Buy (instant key): {checkout_url('pro')}\n"
+                        f"  Or run: ascpilot upgrade --open")
 
 
 def _sales_for(snapshot, days):
@@ -162,6 +162,27 @@ def cmd_report(args):
 
 
 def cmd_license(args):
+    if args.action == "claim":
+        from ascpilot import claim as claimlib
+        import time as _t
+        sid = (args.key or input("Checkout session id (cs_...): ")).strip()
+        if not sid.startswith("cs_"):
+            raise UserError("That doesn't look like a Stripe Checkout session id (it starts with cs_). It's in the thank-you page URL.")
+        deadline = _t.time() + (args.wait if args.wait else 0)
+        while True:
+            key = claimlib.fetch(sid)
+            if key or _t.time() >= deadline:
+                break
+            print(dim("  license not published yet, retrying in 10s…"), file=sys.stderr)
+            _t.sleep(10)
+        if not key:
+            raise UserError("No license published for that session yet. Licenses appear 1–3 minutes after payment;\n"
+                            "  retry with `ascpilot license claim <id> --wait 600`.")
+        payload = lic.activate(key)
+        if not payload:
+            raise UserError("Downloaded key failed verification. Open a ticket: " + REPO_URL + "/issues")
+        print(c(f"✓ {PRODUCT} {payload.get('plan', 'pro').title()} activated for {payload.get('email') or 'you'}", "32"))
+        return
     if args.action == "activate":
         key = args.key or getpass.getpass("License key: ")
         payload = lic.activate(key)
@@ -182,6 +203,26 @@ def cmd_ignore(args):
         ids = (ids - set(args.ids)) if args.remove else (ids | set(args.ids))
         save_ignore(ids)
     print("Ignored apps: " + (", ".join(sorted(ids)) if ids else "none"))
+
+
+def cmd_upgrade(args):
+    info = pricing()
+    url = checkout_url(args.plan)
+    plans = {p.get("id"): p for p in info.get("plans") or []}
+    p = plans.get(args.plan) or {}
+    if args.json:
+        print(json.dumps({"plan": args.plan, "price_usd": p.get("price_usd"), "checkout_url": url,
+                          "after_payment": "Key appears on the thank-you page; or run `ascpilot license claim <cs_...>`"}, indent=2))
+        return
+    print(bold(f"{PRODUCT} {args.plan.title()}") + f" — ${p.get('price_usd', 49 if args.plan == 'pro' else 149)} one-time")
+    for f in p.get("features") or []:
+        print(f"  ✓ {f}")
+    print(f"\n  Checkout: {c(url, '36')}")
+    print(dim("  Your license key appears on the thank-you page right after payment (or: ascpilot license claim <cs_...>)."))
+    if args.open:
+        import subprocess as _sp
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        _sp.run([opener, url], check=False)
 
 
 def cmd_mcp(args):
@@ -233,9 +274,15 @@ def build_parser():
     sp.add_argument("--out", help="write to a file instead of stdout")
     sp.set_defaults(func=cmd_report)
     sp = sub.add_parser("license", help="show or activate your license")
-    sp.add_argument("action", nargs="?", choices=["show", "activate"], default="show")
-    sp.add_argument("key", nargs="?")
+    sp.add_argument("action", nargs="?", choices=["show", "activate", "claim"], default="show")
+    sp.add_argument("key", nargs="?", help="license key (activate) or Stripe checkout session id cs_... (claim)")
+    sp.add_argument("--wait", type=int, default=0, help="claim: keep retrying for N seconds")
     sp.set_defaults(func=cmd_license)
+    sp = sub.add_parser("upgrade", help="get Pro/Studio: prints (or opens) the checkout link")
+    sp.add_argument("--plan", choices=["pro", "studio"], default="pro")
+    sp.add_argument("--open", action="store_true", help="open checkout in your browser")
+    sp.add_argument("--json", action="store_true")
+    sp.set_defaults(func=cmd_upgrade)
     sp = sub.add_parser("ignore", help="hide retired apps from the leak scan (Apple ID or bundle ID)")
     sp.add_argument("ids", nargs="*")
     sp.add_argument("--remove", action="store_true")

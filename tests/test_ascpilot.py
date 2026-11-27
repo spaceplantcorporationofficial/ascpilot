@@ -134,6 +134,16 @@ class SalesTests(unittest.TestCase):
         self.assertIn(("Frozen Checkout", "INSTALLS_NO_PAID"), {(l["app"], l["code"]) for l in leaks})
 
 
+class ClaimTests(unittest.TestCase):
+    def test_seal_roundtrip_and_wrong_session(self):
+        from ascpilot import claim
+        sid = "cs_live_a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ0123456789abcdefABCDEF"
+        blob = claim.seal(sid, "ASCP1.payload.signature-" + "x" * 90, "pro", "2026-11-27T00:00:00Z")
+        self.assertEqual(claim.open_sealed(sid, blob), "ASCP1.payload.signature-" + "x" * 90)
+        self.assertIsNone(claim.open_sealed(sid + "0", blob))
+        self.assertEqual(len(claim.claim_id(sid)), 40)
+
+
 class MCPTests(unittest.TestCase):
     def test_handshake_and_tools(self):
         init = handle({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18"}})
@@ -141,6 +151,7 @@ class MCPTests(unittest.TestCase):
         self.assertIsNone(handle({"jsonrpc": "2.0", "method": "notifications/initialized"}))
         tools = handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})["result"]["tools"]
         self.assertIn("asc_revenue_leaks", [t["name"] for t in tools])
+        self.assertIn("asc_upgrade", [t["name"] for t in tools])
         self.assertTrue(all("pro" not in t for t in tools))
         locked = handle({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
                          "params": {"name": "asc_sales_summary", "arguments": {}}})

@@ -1,5 +1,7 @@
 # ASC Pilot
 
+<!-- mcp-name: io.github.spaceplantcorporationofficial/ascpilot -->
+
 **Find the money your App Store account is leaking.** From your terminal, or from your AI coding agent via MCP.
 
 ```
@@ -68,6 +70,7 @@ All commands accept `--json`.
 ## Use it from your AI agent (MCP)
 
 ```bash
+uvx --from git+https://github.com/spaceplantcorporationofficial/ascpilot ascpilot mcp   # zero-install run
 claude mcp add ascpilot -- ascpilot mcp          # Claude Code
 codex mcp add ascpilot -- ascpilot mcp           # Codex
 ascpilot mcp-config                              # JSON for Cursor / Antigravity / anything else
@@ -75,7 +78,11 @@ ascpilot mcp-config                              # JSON for Cursor / Antigravity
 
 Then ask: *"Which of my apps are leaking revenue, and fix the metadata on the worst one."*
 
-Tools: `asc_list_apps`, `asc_review_radar`, `asc_revenue_leaks`, `asc_sales_summary` (Pro), `asc_cashflow_report` (Pro).
+Tools: `asc_list_apps`, `asc_review_radar`, `asc_revenue_leaks`, `asc_upgrade`, `asc_sales_summary` (Pro), `asc_cashflow_report` (Pro).
+
+- **Claude Desktop:** download `ascpilot-mcp-<version>.mcpb` from [Releases](https://github.com/spaceplantcorporationofficial/ascpilot/releases/latest) and double-click.
+- **Official MCP Registry:** `io.github.spaceplantcorporationofficial/ascpilot`
+- **For agents:** [llms.txt](https://spaceplantcorporationofficial.github.io/ascpilot/llms.txt) · machine-readable plans + checkout links: [pricing.json](https://spaceplantcorporationofficial.github.io/ascpilot/pricing.json)
 
 ## Pro
 
@@ -85,7 +92,9 @@ full MCP toolset, all 1.x updates. Licenses are verified offline (Ed25519) — A
 → **[Get ASC Pilot Pro](https://spaceplantcorporationofficial.github.io/ascpilot/#pricing)**
 
 ```bash
-ascpilot license activate ASCP1.xxxxx
+ascpilot upgrade --open                 # opens Stripe checkout
+ascpilot license activate ASCP1.xxxxx   # key is shown on the thank-you page right after payment
+ascpilot license claim cs_live_...      # or fetch it later with your checkout session id
 ```
 
 ## License

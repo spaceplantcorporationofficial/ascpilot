@@ -1,0 +1,40 @@
+name: Release + MCP Registry
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests
+        run: python -m unittest discover -s tests -v
+      - name: Build MCP bundle + server.json
+        run: python tools/build_mcpb.py
+      - name: Verify server.json matches tag
+        run: |
+          V=$(python -c "import json;print(json.load(open('server.json'))['version'])")
+          echo "server.json version $V, ref ${GITHUB_REF_NAME}"
+          test "v$V" = "${GITHUB_REF_NAME}" || test "${GITHUB_EVENT_NAME}" = "workflow_dispatch"
+      - name: Upload bundle to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(python -c "import json;print(json.load(open('server.json'))['version'])")
+          gh release view "v$V" >/dev/null 2>&1 || gh release create "v$V" --title "ASC Pilot $V" --notes "See README."
+          gh release upload "v$V" dist/*.mcpb server.json --clobber
+      - name: Publish to the official MCP Registry
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
