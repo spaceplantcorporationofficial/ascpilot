@@ -14,7 +14,7 @@ from ascpilot import license as lic
 from ascpilot.asc import ASCError, Client
 from ascpilot.config import load_ignore, save_ignore, CONFIG_FILE, load_credentials, save_config
 from ascpilot.leaks import find_leaks, summarize
-from ascpilot.report import bold, c, dim, markdown_report, render_apps, render_leaks, render_money, render_radar
+from ascpilot.report import bold, c, dim, github_summary, markdown_report, render_apps, render_leaks, render_money, render_radar
 from ascpilot.sales import fetch_sales
 from ascpilot.scan import load_or_scan
 
@@ -131,6 +131,14 @@ def cmd_leaks(args):
                           "hidden": 0 if pro else max(0, len(leaks) - 1)}, indent=2))
     else:
         print(render_leaks(leaks, summary, pro))
+    if getattr(args, "github_summary", False):
+        md = github_summary(leaks, summary, pro)
+        gs = os.environ.get("GITHUB_STEP_SUMMARY")
+        if gs:
+            with open(gs, "a", encoding="utf-8") as fh:
+                fh.write(md)
+        elif not args.json:
+            print("\n" + md)
     return 2 if args.fail_on_leak and any(l["severity"] in ("critical", "high") for l in leaks) else 0
 
 
@@ -263,6 +271,7 @@ def build_parser():
     sp.add_argument("--days", type=int, default=14, help="sales window for the paywall check (Pro)")
     sp.add_argument("--no-sales", dest="with_sales", action="store_false", help="skip the Sales-API paywall check")
     sp.add_argument("--fail-on-leak", action="store_true", help="exit 2 when critical/high leaks exist (CI)")
+    sp.add_argument("--github-summary", action="store_true", help="append Markdown summary to $GITHUB_STEP_SUMMARY")
     sp.set_defaults(func=cmd_leaks)
     sp = sub.add_parser("money", help="[Pro] installs, payers and proceeds from Apple's Sales API")
     common(sp)

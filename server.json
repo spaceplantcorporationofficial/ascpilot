@@ -3,7 +3,7 @@
   "name": "io.github.spaceplantcorporationofficial/ascpilot",
   "title": "ASC Pilot",
   "description": "Find the money your App Store Connect account is leaking (unreleased builds, frozen IAPs).",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "websiteUrl": "https://spaceplantcorporationofficial.github.io/ascpilot/",
   "repository": {
     "url": "https://github.com/spaceplantcorporationofficial/ascpilot",
@@ -12,9 +12,9 @@
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/spaceplantcorporationofficial/ascpilot/releases/download/v1.1.0/ascpilot-mcp-1.1.0.mcpb",
-      "version": "1.1.0",
-      "fileSha256": "f469458d8269c07c9a6d381786e7989304d2fb56b6e3df29a86302ce2fd13595",
+      "identifier": "https://github.com/spaceplantcorporationofficial/ascpilot/releases/download/v1.2.0/ascpilot-mcp-1.2.0.mcpb",
+      "version": "1.2.0",
+      "fileSha256": "9e76a604098ecd277fa915a4c77a18ec833f650640338c30398f8f50b18fa8d5",
       "transport": {
         "type": "stdio"
       }

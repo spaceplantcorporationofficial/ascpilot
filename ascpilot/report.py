@@ -205,3 +205,26 @@ def markdown_report(snapshot: dict, leaks: list, summary: dict, sales: Optional[
                       f"{e['updates']} | {e['iap_units']} | {e['paying_units']} | {money_str(e['proceeds'])} |")
     md += ["", "---", f"_Numbers come straight from App Store Connect. {PRODUCT} never estimates revenue or converts currencies._", ""]
     return "\n".join(md)
+
+
+def github_summary(leaks: list, summary: dict, pro: bool) -> str:
+    """Compact Markdown summary suitable for $GITHUB_STEP_SUMMARY."""
+    sev = summary["by_severity"]
+    lines = [
+        f"## {PRODUCT} — App Store Revenue Leak Check",
+        "",
+        f"Scanned **{summary['apps_scanned']}** apps: "
+        f"**{sev['critical']}** critical · **{sev['high']}** high · **{sev['medium']}** medium · {sev['low']} low  ",
+        f"**{summary['apps_with_leaks']}** apps leaking · **{summary['frozen_products']}** in-app products customers cannot buy",
+        "",
+    ]
+    if not leaks:
+        lines.append("No revenue leaks found.")
+        return "\n".join(lines) + "\n"
+    shown = leaks if pro else leaks[:1]
+    lines += ["| Severity | App | Leak |", "|---|---|---|"]
+    for l in shown:
+        lines.append(f"| `{l['severity'].upper()}` | **{l['app']}** | {l['title']} |")
+    if not pro and len(leaks) > 1:
+        lines += ["", f"> **{len(leaks) - 1} more leak(s) hidden.** Add a Pro/Studio `license-key` secret to see every leak, fix playbook and Sales-API proceeds → {BUY_URL}"]
+    return "\n".join(lines) + "\n"

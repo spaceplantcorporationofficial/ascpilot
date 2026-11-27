@@ -1,0 +1,59 @@
+name: "ASC Pilot — App Store Revenue Leak Check"
+description: "Scan App Store Connect for unreleased approvals, apps off sale, frozen IAPs/subscriptions, and stalled drafts. Posts a GitHub Job Summary."
+author: "SpacePlant Corporation"
+branding:
+  icon: "dollar-sign"
+  color: "green"
+
+inputs:
+  asc-key-id:
+    description: "App Store Connect API Key ID"
+    required: true
+  asc-issuer-id:
+    description: "App Store Connect API Issuer ID"
+    required: true
+  asc-private-key:
+    description: "Contents of AuthKey_XXXX.p8 (store as a GitHub Actions secret)"
+    required: true
+  asc-vendor-number:
+    description: "Optional Vendor Number for Apple Sales API checks (Pro)"
+    required: false
+    default: ""
+  license-key:
+    description: "Optional ASC Pilot Pro / Studio license key (ASCP1.…)"
+    required: false
+    default: ""
+  days:
+    description: "Rolling UTC days for Sales API paywall check (Pro)"
+    required: false
+    default: "14"
+  fail-on-leak:
+    description: "Exit non-zero if any critical or high revenue leak is found"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run ASC Pilot leak scan
+      shell: bash
+      env:
+        ASC_KEY_ID: ${{ inputs.asc-key-id }}
+        ASC_ISSUER_ID: ${{ inputs.asc-issuer-id }}
+        ASC_PRIVATE_KEY_RAW: ${{ inputs.asc-private-key }}
+        ASC_VENDOR_NUMBER: ${{ inputs.asc-vendor-number }}
+        ASCPILOT_LICENSE: ${{ inputs.license-key }}
+        ASCPILOT_DAYS: ${{ inputs.days }}
+        ASCPILOT_FAIL: ${{ inputs.fail-on-leak }}
+      run: |
+        set -euo pipefail
+        KEY_FILE="$(mktemp)"
+        trap 'rm -f "$KEY_FILE"' EXIT
+        chmod 600 "$KEY_FILE"
+        printf '%s\n' "$ASC_PRIVATE_KEY_RAW" > "$KEY_FILE"
+        export ASC_KEY_FILEPATH="$KEY_FILE"
+        ARGS=(leaks --refresh --days "$ASCPILOT_DAYS" --github-summary)
+        if [ "$ASCPILOT_FAIL" = "true" ]; then
+          ARGS+=(--fail-on-leak)
+        fi
+        PYTHONPATH="${{ github.action_path }}" python3 -m ascpilot "${ARGS[@]}"

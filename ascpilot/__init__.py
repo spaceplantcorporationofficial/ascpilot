@@ -3,7 +3,7 @@
 From your terminal, or from your AI coding agent via MCP.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 PRODUCT = "ASC Pilot"
 SITE_URL = "https://spaceplantcorporationofficial.github.io/ascpilot/"

@@ -69,6 +69,24 @@ Create a key at **App Store Connect → Users and Access → Integrations → Ap
 
 All commands accept `--json`.
 
+## See a live Pro report
+
+→ **[Interactive sample Cash-Flow Report](https://spaceplantcorporationofficial.github.io/ascpilot/demo/)**
+
+## Run weekly in GitHub Actions (CI)
+
+```yaml
+- uses: spaceplantcorporationofficial/ascpilot@v1
+  with:
+    asc-key-id: ${{ secrets.ASC_KEY_ID }}
+    asc-issuer-id: ${{ secrets.ASC_ISSUER_ID }}
+    asc-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
+    license-key: ${{ secrets.ASCPILOT_LICENSE }}   # optional (Pro/Studio)
+    fail-on-leak: 'true'
+```
+
+Posts a Markdown table directly into the GitHub Actions Job Summary.
+
 ## Use it from your AI agent (MCP)
 
 ```bash

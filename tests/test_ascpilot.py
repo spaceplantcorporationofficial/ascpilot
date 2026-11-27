@@ -15,7 +15,7 @@ from ascpilot import license as lic  # noqa: E402
 from ascpilot.asc import der_to_raw_signature  # noqa: E402
 from ascpilot.leaks import find_leaks, summarize  # noqa: E402
 from ascpilot.mcp import handle  # noqa: E402
-from ascpilot.report import markdown_report, render_leaks  # noqa: E402
+from ascpilot.report import github_summary, markdown_report, render_leaks  # noqa: E402
 from ascpilot.sales import aggregate, parse_tsv  # noqa: E402
 from ascpilot.scan import app_status, classify_version_state  # noqa: E402
 
@@ -108,6 +108,10 @@ class LeakTests(unittest.TestCase):
         self.assertIn("Rejected Hostage", full)
         md = markdown_report(SNAP, leaks, summarize(leaks, SNAP), None)
         self.assertIn("# App Store Cash-Flow Report", md)
+        gs_free = github_summary(leaks, summarize(leaks, SNAP), pro=False)
+        self.assertIn("more leak(s) hidden", gs_free)
+        gs_pro = github_summary(leaks, summarize(leaks, SNAP), pro=True)
+        self.assertIn("Rejected Hostage", gs_pro)
 
 
 TSV = "\t".join(["Provider", "Provider Country", "SKU", "Developer", "Title", "Version", "Product Type Identifier",
